@@ -12,6 +12,12 @@ export class PiService {
     private piRepository: Repository<Pi>,
   ) {}
 
+  async validateAccessToken(accessToken: string): Promise<Pi | null> {
+    return this.piRepository.findOne({
+      where: { accessToken },
+    });
+  }
+
   create(createPiDto: CreatePiDto): Promise<Pi> {
     const pi = this.piRepository.create(createPiDto);
     return this.piRepository.save(pi);
@@ -26,12 +32,28 @@ export class PiService {
   }
 
   async update(id: string, updatePiDto: UpdatePiDto): Promise<Pi> {
-    const pi = await this.findOne(id); // Ensure existence
+    const pi = await this.findOne(id);
     this.piRepository.merge(pi, updatePiDto);
     return this.piRepository.save(pi);
   }
 
   async remove(id: string): Promise<void> {
     await this.piRepository.delete(id);
+  }
+
+  async registerDevice(deviceId: string, accessToken: string): Promise<Pi> {
+    let device = await this.piRepository.findOne({
+      where: { deviceId },
+    });
+
+    if (!device) {
+      device = this.piRepository.create({ deviceId, accessToken });
+      await this.piRepository.save(device);
+      console.log(`New device registered: ${deviceId}`);
+    } else {
+      console.log(`Device already registered: ${deviceId}`);
+    }
+
+    return device;
   }
 }

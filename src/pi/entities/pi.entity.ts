@@ -13,10 +13,16 @@ export class Pi {
   id: string;
 
   @Column()
-  name: string;
+  deviceId: string;
 
-  @Column()
-  value: number;
+  @Column({ nullable: false })
+  accessToken: string;
+
+  // @Column()
+  // name: string;
+
+  // @Column()
+  // value: number;
 
   @ManyToMany(() => Feature)
   @JoinTable()
