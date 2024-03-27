@@ -7,6 +7,10 @@ export class ValidateDeviceAccessTokenMiddleware implements NestMiddleware {
   constructor(private readonly piService: PiService) {}
 
   async use(req: Request, res: Response, next: NextFunction) {
+    if (req.originalUrl === '/registerDevice') {
+      return next;
+    }
+
     const accessToken = req.headers['access-token'] as string;
 
     if (!accessToken) {
