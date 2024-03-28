@@ -12,12 +12,6 @@ export class PiService {
     private piRepository: Repository<Pi>,
   ) {}
 
-  async validateAccessToken(accessToken: string): Promise<Pi | null> {
-    return this.piRepository.findOne({
-      where: { accessToken },
-    });
-  }
-
   create(createPiDto: CreatePiDto): Promise<Pi> {
     const pi = this.piRepository.create(createPiDto);
     return this.piRepository.save(pi);
