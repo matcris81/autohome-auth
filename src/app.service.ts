@@ -3,12 +3,15 @@ import * as crypto from 'crypto';
 import { Esp32 } from './mqtt/entities/esp32.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { Pi } from './pi/entities/pi.entity';
 
 @Injectable()
 export class AppService {
   constructor(
     @InjectRepository(Esp32)
     private esp32Repository: Repository<Esp32>,
+    @InjectRepository(Pi)
+    private piRepository: Repository<Pi>,
   ) {}
 
   getHello(): string {
@@ -25,6 +28,22 @@ export class AppService {
       .digest('hex');
 
     return hash;
+  }
+
+  async validateAccessToken(accessToken: string): Promise<boolean> {
+    const piDevice = await this.piRepository.findOne({
+      where: { accessToken },
+    });
+
+    if (piDevice) {
+      return true;
+    }
+
+    const esp32Device = await this.esp32Repository.findOne({
+      where: { accessToken },
+    });
+
+    return !!esp32Device;
   }
 
   async registerDevice(deviceId: string): Promise<Esp32> {

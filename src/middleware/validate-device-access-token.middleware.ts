@@ -1,14 +1,16 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import { PiService } from '../pi/pi.service';
+import { AppService } from 'src/app.service';
 
 @Injectable()
 export class ValidateDeviceAccessTokenMiddleware implements NestMiddleware {
-  constructor(private readonly piService: PiService) {}
+  constructor(private readonly appService: AppService) {}
 
   async use(req: Request, res: Response, next: NextFunction) {
     if (req.originalUrl === '/registerDevice') {
-      return next;
+      next();
+      return;
     }
 
     const accessToken = req.headers['access-token'] as string;
@@ -17,7 +19,7 @@ export class ValidateDeviceAccessTokenMiddleware implements NestMiddleware {
       return res.status(403).json({ message: 'Access token is required' });
     }
 
-    const device = await this.piService.validateAccessToken(accessToken);
+    const device = await this.appService.validateAccessToken(accessToken);
 
     console.log('Device:', device);
 

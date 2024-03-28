@@ -11,9 +11,10 @@ import { UserService } from './user/user.service';
 import { PiService } from './pi/pi.service';
 import { PiServerGateway } from './pi/pi-server.gateway';
 import { ValidateDeviceAccessTokenMiddleware } from './middleware/validate-device-access-token.middleware';
-import { ClientsModule, Transport } from '@nestjs/microservices';
 import { MqttModule } from './mqtt/mqtt.module';
 import { Esp32 } from './mqtt/entities/esp32.entity';
+import { MqttController } from './mqtt/mqtt.controller';
+import { MqttService } from './mqtt/mqtt.service';
 
 @Module({
   imports: [
@@ -30,8 +31,8 @@ import { Esp32 } from './mqtt/entities/esp32.entity';
     TypeOrmModule.forFeature([User, Pi, Feature, Esp32]),
     MqttModule,
   ],
-  controllers: [AppController, UsersController, PiController],
-  providers: [AppService, UserService, PiService, PiServerGateway],
+  controllers: [AppController, UsersController, PiController, MqttController],
+  providers: [AppService, UserService, PiService, PiServerGateway, MqttService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
