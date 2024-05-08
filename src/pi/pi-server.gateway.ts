@@ -1,9 +1,9 @@
 import {
-  ConnectedSocket,
   OnGatewayConnection,
   OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
+  WsResponse,
 } from '@nestjs/websockets';
 import { PiService } from './pi.service';
 import { Socket } from 'socket.io';
@@ -78,6 +78,47 @@ export class PiServerGateway
     console.log('sending message');
     if (client) {
       client.emit(target, command);
+    }
+  }
+
+  @SubscribeMessage('getWifiMacAddress')
+  async getWifiMacAddress(deviceId: string): Promise<WsResponse<string>> {
+    // const deviceId = payload;
+
+    const targetClient = this.connectedPis.get(deviceId);
+
+    if (!targetClient) {
+      console.log(`Device with ID ${deviceId} not found.`);
+      return { event: 'wifiMacAddressResponse', data: 'Device not found' };
+    }
+
+    const bssidPromise = new Promise<string>((resolve, reject) => {
+      // Setup a timeout
+      const timeout = setTimeout(() => {
+        reject('Timeout waiting for Wi-Fi MAC Address response');
+      }, 10000); // 10 seconds timeout
+
+      targetClient.once('wifiMacAddressResponse', (data) => {
+        clearTimeout(timeout);
+        console.log(`Wi-Fi MAC Address for device ${deviceId}:`, data.bssid);
+        resolve(data.bssid);
+      });
+
+      targetClient.emit('getWifiMacAddress', {});
+    });
+
+    try {
+      const bssid = await bssidPromise;
+      return { event: 'wifiMacAddressResponse', data: bssid };
+    } catch (error) {
+      console.error(
+        `Failed to get Wi-Fi MAC Address from device ${deviceId}`,
+        error,
+      );
+      return {
+        event: 'wifiMacAddressErrorResponse',
+        data: 'Failed to get Wi-Fi MAC Address',
+      };
     }
   }
 }

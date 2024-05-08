@@ -1,5 +1,5 @@
 // mqtt.service.ts
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import {
   ClientProxy,
   ClientProxyFactory,
@@ -7,7 +7,7 @@ import {
 } from '@nestjs/microservices';
 
 @Injectable()
-export class MqttService {
+export class MqttService implements OnModuleInit {
   private client: ClientProxy;
 
   constructor() {
@@ -19,8 +19,16 @@ export class MqttService {
     });
   }
 
+  onModuleInit() {
+    this.client.connect();
+  }
+
   // Method to publish messages
   publishMessage(topic: string, message: string) {
-    this.client.emit<any>({ cmd: 'publish' }, { topic, message }).subscribe();
+    console.log('publishing message', topic, message);
+    this.client.send(topic, message).subscribe({
+      next: () => console.log('Message published successfully'),
+      error: (error) => console.error('Error publishing message:', error),
+    });
   }
 }

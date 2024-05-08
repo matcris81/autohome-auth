@@ -1,14 +1,12 @@
 import {
   Controller,
-  Get,
   Post,
+  Get,
   Body,
-  Headers,
   Param,
   NotFoundException,
 } from '@nestjs/common';
 import { PiService } from './pi.service';
-import { CreatePiDto } from './dto/create-pi.dto';
 import { PiServerGateway } from './pi-server.gateway';
 
 @Controller('pi')
@@ -23,6 +21,7 @@ export class PiController {
     @Param('piId') piId: string,
     @Body() body: { command: string; target: string },
   ): Promise<void> {
+    console.log('received command');
     try {
       // const pi = await this.piService.findOne(id);
       console.log('Will send message to device:', piId);
@@ -30,6 +29,12 @@ export class PiController {
     } catch (error) {
       throw new NotFoundException(`Pi with ID ${piId} not found.`);
     }
-    // return this.piService.create(createPiDto);
+  }
+
+  @Get('getMacAddress/:piId')
+  async getWifi(@Param('piId') piId: string): Promise<string> {
+    const test = await this.piServerGateway.getWifiMacAddress(piId);
+    console.log('test:', test);
+    return test.data;
   }
 }
